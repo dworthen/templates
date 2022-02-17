@@ -1,0 +1,52 @@
+{
+  "name": "[PACKAGE]",
+  "version": "0.0.1",
+  "description": "[DESCRIPTION]",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "test": "pnpm test -r --parallel",
+    "clean": "pnpm clean -r --parallel",
+    "build": "pnpm build -r --stream",
+    "start": "pnpm start -r --parallel",
+    "start:prod": "pnpm start:prod -r --parallel",
+    "typecheck": "pnpm typecheck -r --parallel",
+    "format:check": "prettier --check \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
+    "format": "prettier --write \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:check": "eslint \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint --fix \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
+    "git:precommit": "run-s lint-staged",
+    "release:changeset": "changeset",
+    "release:version": "changeset version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://[REPO].git"
+  },
+  "author": "Derek Worthen <worthend.derek@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://[REPO]/issues"
+  },
+  "homepage": "https://[REPO]#readme",
+  "devDependencies": {
+    "@changesets/changelog-git": "^0.1.9",
+    "@changesets/cli": "^2.20.0",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-config-standard-with-typescript": "^21.0.1",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.4",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.5.0",
+    "typescript": "^4.5.5"
+  }
+}

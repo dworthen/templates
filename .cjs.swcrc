@@ -1,0 +1,22 @@
+{
+  "test": ".*.tsx?$",
+  "sourceMaps": true,
+  "jsc": {
+    "target": "es2021",
+    "externalHelpers": true,
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true,
+      "decorators": false,
+      "dynamicImport": true
+    }
+  },
+  "module": {
+    "type": "commonjs",
+    "strict": false,
+    "strictMode": true,
+    "lazy": false,
+    "noInterop": false,
+    "ignoreDynamic": true
+  }
+}
