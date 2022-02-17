@@ -1,8 +1,9 @@
 {
   "name": "[PACKAGE]",
-  "version": "0.0.1",
+  "version": "0.0.0",
+  "private": true,
   "description": "[DESCRIPTION]",
-  "main": "index.js",
+  "packageManager": "pnpm@6.31.0",
   "scripts": {
     "prepare": "husky install",
     "test": "pnpm test -r --parallel",
@@ -19,16 +20,6 @@
     "release:changeset": "changeset",
     "release:version": "changeset version"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://[REPO].git"
-  },
-  "author": "Derek Worthen <worthend.derek@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://[REPO]/issues"
-  },
-  "homepage": "https://[REPO]#readme",
   "devDependencies": {
     "@changesets/changelog-git": "^0.1.9",
     "@changesets/cli": "^2.20.0",
