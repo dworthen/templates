@@ -8,4 +8,9 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": true
   },
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.importModuleSpecifierEnding": "js"
 }

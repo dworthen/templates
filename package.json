@@ -1,5 +1,5 @@
 {
-  "name": "[PACKAGE]",
+  "name": "monorepo",
   "version": "0.0.0",
   "private": true,
   "description": "[DESCRIPTION]",
@@ -16,13 +16,14 @@
     "format": "prettier --write \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
     "lint:check": "eslint \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "eslint --fix \"./packages/*/src/**/*.{js,jsx,ts,tsx}\"",
-    "git:precommit": "run-s lint-staged",
+    "git:precommit": "lint-staged",
     "release:changeset": "changeset",
     "release:version": "changeset version"
   },
   "devDependencies": {
     "@changesets/changelog-git": "^0.1.9",
     "@changesets/cli": "^2.20.0",
+    "@types/node": "^17.0.19",
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
     "eslint": "^8.9.0",
