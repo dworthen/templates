@@ -30,5 +30,15 @@
             "message": "Author, e.g., NAME <EMAIL>",
             "required": true
         }
+    ],
+    "files": [
+        {
+            "files": [
+                "**/*"
+            ],
+            "parse": {
+                "exclude": "templates/**/*"
+            }
+        }
     ]
 }
