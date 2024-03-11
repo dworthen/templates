@@ -28,7 +28,7 @@ tasks:
 
   dev:
     cmds:
-      - wgo run task build -- --single-target
+      - wgo task build -- --single-target
 
   run:
     cmds:
