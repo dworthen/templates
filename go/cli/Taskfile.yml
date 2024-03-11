@@ -36,4 +36,4 @@ tasks:
 
   add-command:
     cmds:
-      - scf ./templates/command ./cmd
+      - scf ./templates/command ./internal/cmd
