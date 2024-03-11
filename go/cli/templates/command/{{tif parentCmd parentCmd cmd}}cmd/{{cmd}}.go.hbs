@@ -1,4 +1,4 @@
-package {{cmd}}cmd
+package {{tif parentCmd parentCmd cmd}}cmd
 
 import (
 	"github.com/spf13/cobra"
@@ -13,7 +13,7 @@ var {{cmd}}Cmd = &cobra.Command{
 
 func init() {
 {{#if parentCmd}}
-	{{parentCmd}}.AddCommand({{cmd}}Cmd)
+	{{parentCmd}}Cmd.AddCommand({{cmd}}Cmd)
 {{/if}}
 	// Here you will define your flags and configuration settings.
 
