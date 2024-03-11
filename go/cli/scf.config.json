@@ -1,12 +1,6 @@
 {
     "prompts": [
         {
-            "variableName": "projectName",
-            "type": "prompt",
-            "message": "Project Name",
-            "required": true
-        },
-        {
             "variableName": "moduleName",
             "type": "prompt",
             "message": "Module Name, e.g., github.com/USER/PROJECT",
