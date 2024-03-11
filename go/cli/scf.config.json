@@ -1,0 +1,34 @@
+{
+    "prompts": [
+        {
+            "variableName": "projectName",
+            "type": "prompt",
+            "message": "Project Name",
+            "required": true
+        },
+        {
+            "variableName": "moduleName",
+            "type": "prompt",
+            "message": "Module Name, e.g., github.com/USER/PROJECT",
+            "required": true
+        },
+        {
+            "variableName": "binaryName",
+            "type": "prompt",
+            "message": "Binary Name",
+            "required": true
+        },
+        {
+            "variableName": "npmPackageName",
+            "type": "prompt",
+            "message": "NPM Package Name",
+            "required": true
+        },
+        {
+            "variableName": "author",
+            "type": "prompt",
+            "message": "Author, e.g., NAME <EMAIL>",
+            "required": true
+        }
+    ]
+}
