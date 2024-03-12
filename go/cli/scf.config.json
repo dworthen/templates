@@ -34,5 +34,13 @@
                 "exclude": "templates/**/*"
             }
         }
-    ]
+    ],
+    "commands": {
+        "postScaffold": [
+            "go mod init {{moduleName}}",
+            "go get github.com/dworthen/updater",
+            "go get github.com/spf13/cobra@v1",
+            "go mod tidy"
+        ]
+    }
 }
