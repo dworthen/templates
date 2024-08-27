@@ -1,0 +1,40 @@
+{
+    "prompts": [
+        {
+            "variableName": "packageName",
+            "type": "prompt",
+            "message": "Package name",
+            "required": true
+        },
+        {
+            "variableName": "description",
+            "type": "prompt",
+            "message": "Description",
+            "required": true
+        },
+        {
+            "variableName": "pythonVersion",
+            "type": "prompt",
+            "message": "Python version, e.g., 3.11.9",
+            "required": true
+        },
+        {
+            "variableName": "author",
+            "type": "prompt",
+            "message": "Author, e.g., NAME <EMAIL>",
+            "required": true
+        }
+    ],
+    "files": [
+        {
+            "files": [
+                "**/*"
+            ]
+        }
+    ],
+    "commands": {
+        "postScaffold": [
+            "poetry install"
+        ]
+    }
+}
