@@ -34,7 +34,11 @@
     ],
     "commands": {
         "postScaffold": [
-            "poetry install"
+            "git init",
+            "poetry install",
+            "poetry self add poetry-dynamic-versioning[plugin]",
+            "poetry add pydantic essex-config",
+            "poetry add coverage pytest pytest-asyncio pytest-timeout ruff poethepoet pyright ipykernel jupyter nbconvert semversioner --group dev"
         ]
     }
 }
