@@ -1,3 +1,5 @@
 logging:
   - id: LogPluginFileSystem
   - id: LogPluginConsole
+    settings:
+      name: MyConsoleLogger
