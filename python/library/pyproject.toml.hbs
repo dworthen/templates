@@ -7,27 +7,17 @@ readme = "README.md"
 packages = [{ include = "{{packageName}}" }]
 
 
-[tool.poetry-dynamic-versioning]
-enable = true
-style = "pep440"
-vcs = "git"
-bump = true
-format-jinja = """
-    {%- if distance == 0 -%}
-        \{{ serialize_pep440(base, stage, revision) }}
-    {%- else -%}
-        \{{ serialize_pep440(base, stage, revision, dev=distance) }}
-    {%- endif -%}
-"""
+[tool.poetry.scripts]
+{{packageName}} = '{{packageName}}.cli.cli:app'
 
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "{{{pythonVersion}}}"
 
 
 [build-system]
-requires = ["poetry-core", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 
 [tool.poe.tasks]
@@ -124,6 +114,8 @@ select = [
     # ANN # Type annotations, re-enable when we get bandwidth
 ]
 ignore = [
+    # Ignore module names shadowing Python builtins
+    "A005",
     # Deprecated Rules
     "ANN101",
     "ANN102",
@@ -149,7 +141,7 @@ convention = "numpy"
 
 # https://github.com/microsoft/pyright/blob/9f81564a4685ff5c55edd3959f9b39030f590b2f/docs/configuration.md#sample-pyprojecttoml-file
 [tool.pyright]
-include = ["{{packageName}}", "tests"]
+include = ["{{packageName}}", "tests", "notebooks", "examples"]
 exclude = ["**/node_modules", "**/__pycache__"]
 
 [tool.pytest.ini_options]

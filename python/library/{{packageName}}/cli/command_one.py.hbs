@@ -1,0 +1,46 @@
+"""Command One."""
+
+from pathlib import Path
+from typing import Any
+
+import typer
+
+from {{packageName}}.api import main
+from {{packageName}}.config import load_config
+
+from .global_options import config_path_option, cwd_option
+
+command_one = typer.Typer()
+
+example_override_option = typer.Option(None, help="An example override option.")
+
+
+@command_one.command("run")
+def run_command(
+    cwd: str = cwd_option,
+    config: str | None = config_path_option,
+    output: str | None = example_override_option,
+):
+    """Run command one."""
+    # loading config with overrides from CLI
+    overrides: dict[str, Any] = {}
+    if output:
+        overrides["output_dir"] = output
+    cwd_or_config_path = (
+        (Path(cwd) / config).resolve() if config else Path(cwd).resolve()
+    )
+    conf = load_config(cwd_or_config_path, overrides=overrides)
+
+    # Optional - Override service with custom service
+    # service_container = load_service_container(conf)
+    # service_container.override_providers(
+    #    log_service=CustomLogService(...args)
+    # )
+
+    # Optional - Register custom plugins
+    # service_container = load_service_container(conf)
+    # log_plugin_factory = service_container.log_plugin_factory()
+    # log_plugin_factory.register_plugin("SomeKey", CustomLogPlugin)
+
+    # Call API entry point
+    main(conf)

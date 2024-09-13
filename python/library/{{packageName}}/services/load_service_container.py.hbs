@@ -1,0 +1,60 @@
+"""Load the service container with builtin plugins and third-party plugins with entry_points auto registered."""
+
+import importlib
+import inspect
+import pkgutil
+from typing import Any, TypeVar
+
+from {{packageName}}.config import Config
+from {{packageName}}.plugins import Plugin
+from {{packageName}}.plugins.logging import LogPlugin
+
+from .service_container import ServiceContainer
+
+_service_container: ServiceContainer | None = None
+
+
+T = TypeVar("T", bound=Plugin[Any])
+
+
+def _get_plugins(t: type[T]) -> list[type[T]]:
+    """Get all the builtin concrete plugins to auto register."""
+    classes: list[type[T]] = []
+
+    package = importlib.import_module("graphrag_modular")
+    for _, modname, _ in pkgutil.walk_packages(
+        package.__path__, f"{package.__name__}."
+    ):
+        module = importlib.import_module(modname)
+        for _, obj in inspect.getmembers(module):
+            if (
+                inspect.isclass(obj)
+                and obj.__module__ == module.__name__
+                and issubclass(obj, t)
+                and obj != t
+            ):
+                classes.append(obj)
+
+    return classes
+
+
+def load_service_container(config: Config) -> ServiceContainer:
+    """Load the service container.
+
+    Auto register builtin plugins and third-party plugins using entry_points.
+    """
+    global _service_container
+    if _service_container:
+        return _service_container
+
+    _service_container = ServiceContainer(config=config)
+
+    # Logging
+    log_plugin_factory = _service_container.log_plugin_factory()
+    for log_plugin in _get_plugins(LogPlugin):
+        log_plugin_factory.register_plugin(log_plugin.__name__, log_plugin)  # type: ignore
+    log_plugin_factory.auto_register_plugins()
+
+    # Add other factory registrations here
+
+    return _service_container

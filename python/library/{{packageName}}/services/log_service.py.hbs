@@ -1,0 +1,58 @@
+"""Log Service."""
+
+from pathlib import Path
+
+from {{packageName}}.config import Config
+from {{packageName}}.factories import LogPluginFactory
+from {{packageName}}.plugins.logging import LogPlugin
+
+
+class LogService:
+    """Log Service."""
+    
+    def __init__(
+        self,
+        plugin_factory: LogPluginFactory,
+        config: Config,
+    ):
+        self.loggers: list[LogPlugin] = []
+        log_config = config.logging
+        cwd = Path(config.cwd).resolve()
+
+        for lc in log_config:
+            self.loggers.append(plugin_factory.create_plugin(lc.id, cwd, lc.settings))
+
+    def info(self, msg: str) -> None:
+        """Log Info."""
+        for logger in self.loggers:
+            logger.info(msg)
+
+    def debug(self, msg: str) -> None:
+        """Log Debug."""
+        for logger in self.loggers:
+            logger.debug(msg)
+
+    def warning(self, msg: str) -> None:
+        """Log Warning."""
+        for logger in self.loggers:
+            logger.warning(msg)
+
+    def error(self, msg: str) -> None:
+        """Log Error."""
+        for logger in self.loggers:
+            logger.error(msg)
+
+    def critical(self, msg: str) -> None:
+        """Log Critical."""
+        for logger in self.loggers:
+            logger.critical(msg)
+
+    def fatal(self, msg: str) -> None:
+        """Log Fatal."""
+        for logger in self.loggers:
+            logger.fatal(msg)
+
+    def log(self, level: int, msg: str) -> None:
+        """Log."""
+        for logger in self.loggers:
+            logger.log(level, msg)

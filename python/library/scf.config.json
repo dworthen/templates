@@ -15,7 +15,7 @@
         {
             "variableName": "pythonVersion",
             "type": "prompt",
-            "message": "Python version, e.g., 3.11.9",
+            "message": "Python version range, e.g., ^3.11",
             "required": true
         },
         {
@@ -34,11 +34,9 @@
     ],
     "commands": {
         "postScaffold": [
-            "git init",
-            "poetry install",
-            "poetry self add poetry-dynamic-versioning[plugin]",
-            "poetry add pydantic essex-config",
-            "poetry add coverage pytest pytest-asyncio pytest-timeout ruff poethepoet pyright ipykernel jupyter nbconvert semversioner --group dev"
+            "poetry add pydantic essex-config typer dependency-injector",
+            "poetry add coverage pytest pytest-asyncio pytest-timeout ruff poethepoet pyright ipykernel jupyter nbconvert semversioner update-toml --group dev",
+            "poetry install"
         ]
     }
 }

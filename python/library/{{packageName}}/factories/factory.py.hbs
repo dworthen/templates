@@ -1,0 +1,88 @@
+"""Factory Base Class."""
+
+import inspect
+from abc import ABC, abstractmethod
+from importlib.metadata import entry_points
+from pathlib import Path
+from typing import Any, Generic, TypeVar, cast
+
+from {{packageName}}.plugins import Plugin
+
+T = TypeVar("T", bound=Plugin[Any])
+
+
+class FailedToRegisterPluginError(ValueError):
+    """Failed to register plugin error."""
+
+    def __init__(self, key: str) -> None:
+        """Initialize the error."""
+        msg = f"Failed to register plugin for '{key}' as key is already registered."
+        super().__init__(msg)
+
+
+class NotAPluginError(ValueError):
+    """Not a plugin error."""
+
+    def __init__(self, key: str, type_name: str = "Plugin") -> None:
+        """Initialize the error."""
+        msg = f"Failed to register plugin for '{key}' as it does not implement the {type_name} class."
+        super().__init__(msg)
+
+
+class PluginNotFoundError(ValueError):
+    """Plugin not found error."""
+
+    def __init__(self, key: str) -> None:
+        """Initialize the error."""
+        msg = f"Failed to load Plugin. No plugin is registered for key: '{key}'."
+        super().__init__(msg)
+
+
+class Factory(ABC, Generic[T]):
+    """Abstract Base Class for Plugin Registry."""
+
+    @property
+    @abstractmethod
+    def _entry_points_registration_key(self) -> str:
+        """Get the registration key."""
+        pass
+
+    @property
+    @abstractmethod
+    def _plugin_type(self) -> type:
+        """Get the type of the plugin."""
+        raise NotImplementedError
+
+    def __init__(self):
+        """Initialize the plugin registry."""
+        self._plugins: dict[str, type[T]] = {}
+
+    def register_plugin(self, key: str, plugin: type[T]) -> None:
+        """Register a plugin."""
+        if key in self._plugins:
+            raise FailedToRegisterPluginError(key)
+        if not inspect.isclass(plugin) or not issubclass(plugin, self._plugin_type):
+            raise NotAPluginError(key, self._plugin_type.__name__)
+        self._plugins[key] = plugin
+
+    def get_plugin(self, plugin_id: str) -> type[T]:
+        """Get a plugin."""
+        if plugin_id not in self._plugins:
+            raise PluginNotFoundError(plugin_id)
+        return self._plugins[plugin_id]
+
+    def create_plugin(self, plugin_id: str, cwd: Path, settings: dict[str, Any]) -> T:
+        """Create a plugin."""
+        plugin_cls = self.get_plugin(plugin_id)
+        args = plugin_cls.get_settings(cwd, **settings)
+        inst = plugin_cls(args)
+        return inst
+
+    def auto_register_plugins(self) -> None:
+        """Auto register plugins."""
+        if not hasattr(self, "_entry_points_registration_key"):
+            return
+        plugins = entry_points(group=self._entry_points_registration_key)
+        for entry_point in plugins:
+            plugin = entry_point.load()
+            self.register_plugin(entry_point.name, cast(type[T], plugin))
