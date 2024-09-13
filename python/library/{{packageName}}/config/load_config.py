@@ -26,7 +26,7 @@ def _search_for_config_in_root_dir(root: str | Path) -> Path | None:
         Otherwise returns None.
     """
     supported_configs = [
-        f"{CONFIG_FILENAME}.{ext}" for ext in SUPPORTED_CONFIG_EXTENSIONS
+        f"{CONFIG_FILENAME}{ext}" for ext in SUPPORTED_CONFIG_EXTENSIONS
     ]
     root = Path(root).resolve()
 

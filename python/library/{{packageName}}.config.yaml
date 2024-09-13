@@ -1,0 +1,3 @@
+logging:
+  - id: LogPluginFileSystem
+  - id: LogPluginConsole

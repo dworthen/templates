@@ -1,1 +1,45 @@
 # {{packageName}}
+
+A basic library structure using
+
+- typer with subcommands
+- `pyproject.toml [tool.poetry.scripts]` exposing the CLI after running `poetry install`.  
+- essex-config for loading config
+- plugins
+- plugin factories with auto registering installed third-party plugins.
+- services
+- A sample third-party plugin that is auto registered
+
+## Running
+
+First build install the sample plugin
+
+```shell
+cd sample-plugins/{{packageName}}_plugin_sample
+poetry build
+cd ../..
+poetry add sample-plugins/{{packageName}}_plugin_sample/dist/{{packageName}}_plugin_sample-0.1.0-py3-none-any.whl
+```
+
+Then install the core library
+
+```shell
+```
+
+Then run `command_one run` for an example command that is using the service architecture.
+
+```shell
+poetry run {{packageName}} command_one run
+```
+
+The above command will use `{{packageName}}.config.yaml` as a sample config file which has the builtin file-system logger and the third-party console logger enabled so you should see logs to `logs/` and to the console. 
+
+## sample-plugins/{{packageName}}_plugin_sample
+
+A sample of a third-party plugin that is auto-registered and available by simple installing it in the same python environment as the core library.
+
+- `pyproject.toml` uses `[tool.poetry.plugins."{{packageName}}.plugins.logging"]` which should map to `[project.entry_points."{{packageName}}.plugins.logging"]`. project.entry_points is a python metadata standard so most tools have support for generating the entry-points for the packaged distribution. Poetry exposes it as `tool.poetry.plugins`. 
+
+## {{packageName}}.config.yaml
+
+Sample config file that has multiple loggers enabled. One builtin plugin and the other a third-party plugin installed in the same python environment.

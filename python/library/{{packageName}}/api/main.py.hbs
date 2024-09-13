@@ -4,14 +4,14 @@ from dependency_injector.wiring import Provide, inject
 
 from {{packageName}}.config import Config
 from {{packageName}}.services import (
-    LogService, 
-    ServiceContainer, 
+    LogService,
+    ServiceContainer,
     load_service_container,
 )
 
 
 def main(config: Config):
-    """Runs main entry point for the application.
+    """Run main entry point for the application.
 
     Ensures the service container has been instantiated if users
     are not overriding the default service container. Then
