@@ -1,0 +1,25 @@
+forms:
+  - fields:
+      - variableName: moduleName
+        type: input
+        title: Module Name
+        description: Module identifier, e.g., github.com/USER/REPO
+        required: true
+      - variableName: binaryName
+        type: input
+        title: Binary Name
+        description: Binary name, e.g., my-binary
+        required: true
+      - variableName: author
+        type: input
+        title: Author
+        description: Author info, e.g., NAME <EMAIL>
+        required: true
+scaffold:
+  .:
+    - files: ["**/*"]
+      parse: ["*.hbs", "{internal,scripts}/**/*.hbs"]
+commands:
+  - postScaffold:
+      - go mod init {{moduleName}}
+      - go mod tidy
