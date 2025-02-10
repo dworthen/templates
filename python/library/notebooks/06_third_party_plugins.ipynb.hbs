@@ -6,17 +6,10 @@
    "source": [
     "# Using Third Party Plugins\n",
     "\n",
-    "This notebook demonstrates using third party plugins that have been installed in the same python environment as the core library. Third party plugins are automatically discovered, registered and ready to use. Third party plugins are discovered using the python/pep standard of entry points. View the pyproject toml files in sample-plugins to see how entry points are used (poetry calls entry points plugins but other build tools may use a different naming scheme).\n",
+    "This notebook demonstrates using third party plugins that have been installed in the same python environment as the core library. Third party plugins are automatically discovered, registered and ready to use. Third party plugins are discovered using the python/pep standard of entry points. View the pyproject toml files in sample-plugins to see how entry points are used (poetry entry points as `[tool.poetry.plugins]` while uv exposes entry points as `[project.entry-points]`).\n",
     "\n",
     "- `sample-plugins/llm-client-plugin-logging`: A simple console logger plugin. This package does not depend on the core library but the implemented class satisfies the `LoggerPlugin` protocol.\n",
-    "- `sample-plugins/llm-client-plugin-cache`: A cache plugin that relies on a `LogService`. The `LogService` is provided to the plugin from the core library using DI and as such the core library is a dependency of the plugin. Typically third party plugin packages can be published with any package name except plugins that rely on DI from the core library. Those packages must be prefixed with `llm_client_plugin`.\n",
-    "\n",
-    "Before running this notebook you must\n",
-    "\n",
-    "1. run `poetry build` in the main directory.\n",
-    "2. run `poetry build` in `sample-plugins/llm-client-plugin-logging`\n",
-    "3. run `poetry add ../../dist/llm_client-0.1.0-py3-none-any.whl` in `sample-plugins/llm-client-plugin-cache` then `poetry build`\n",
-    "4. run `poetry add sample-plugins/llm-client-plugin-logging/dist/llm_client_plugin_logger-0.1.0-py3-none-any.whl` and `sample-plugins/llm-client-plugin-cache/dist/llm_client_plugin_cache-0.1.0-py3-none-any.whl` back in the main directory\n"
+    "- `sample-plugins/llm-client-plugin-cache`: A cache plugin that relies on a `LogService`. The `LogService` is provided to the plugin from the core library using DI and as such the core library is a dependency of the plugin. Typically third party plugin packages can be published with any package name except plugins that rely on DI from the core library. Those packages must be prefixed with `llm_client_plugin`.\n"
    ]
   },
   {
