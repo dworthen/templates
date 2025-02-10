@@ -1,0 +1,14 @@
+"""Public surface for registering plugins."""
+
+from typing import Any, TypeVar
+
+from {{packageName}}.plugins.plugin import Plugin
+
+T = TypeVar("T", bound=Plugin[Any])
+
+_plugins: list[type] = []
+
+
+def register_plugin(plugin: type) -> None:
+    """Register a plugin to be auto registered."""
+    _plugins.append(plugin)

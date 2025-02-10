@@ -1,0 +1,12 @@
+"""Main API entry point."""
+
+from {{packageName}}.config.config import Config
+from {{packageName}}.services.load_service_container import load_service_container
+from {{packageName}}.services.sample_app_service import SampleAppService
+from {{packageName}}.services.service_container import ServiceContainer
+
+
+def create_sample_app(config: Config) -> tuple[SampleAppService, ServiceContainer]:
+    """Create LLM Client Service."""
+    sc = load_service_container(config)
+    return (sc.sample_app_service(), sc)

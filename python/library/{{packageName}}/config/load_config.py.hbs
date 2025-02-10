@@ -1,0 +1,168 @@
+"""Load configuration from a file."""
+
+import os
+from collections.abc import Callable
+from pathlib import Path
+from string import Template
+from typing import Any, Protocol, TypeVar
+
+from dotenv import load_dotenv
+
+from {{packageName}}.config.errors import ConfigLoadingError
+from {{packageName}}.config.parsers import get_parser_for_file
+
+T = TypeVar("T", covariant=True)
+
+
+class ConfigInitializer(Protocol[T]):
+    """Config Initializer Protocol.
+
+    Represents a configuration initializer that accepts **kwargs to initialize.
+    """
+
+    def __call__(self, *args: Any, **kwargs: Any) -> T:
+        """Call the initializer."""
+        raise NotImplementedError
+
+
+def _load_dotenv(env_file_path: Path | str) -> None:
+    """Load the .env file if it exists."""
+    env_file_path = Path(env_file_path).resolve()
+    if not env_file_path.is_file():
+        msg = f"Env file not found: {env_file_path}"
+        raise ConfigLoadingError(msg)
+    load_dotenv(env_file_path)
+
+
+def _parse_env_variables(text: str) -> str:
+    """Parse environment variables in the configuration text."""
+    try:
+        return Template(text).substitute(os.environ)
+    except KeyError as error:
+        msg = "Environment variable not found."
+        raise ConfigLoadingError(msg) from error
+
+
+def _recursive_merge_dicts(dest: dict[str, Any], src: dict[str, Any]) -> None:
+    """Recursively merge two dictionaries in place."""
+    for key, value in src.items():
+        if isinstance(value, dict):
+            if isinstance(dest.get(key), dict):
+                _recursive_merge_dicts(dest[key], value)
+            else:
+                dest[key] = value
+        elif isinstance(value, list):
+            if isinstance(dest.get(key), list):
+                _recursive_merge_lists(dest[key], value)
+            else:
+                dest[key] = value
+        else:
+            dest[key] = value
+
+
+def _recursive_merge_lists(dest: list[Any], src: list[Any]):
+    """Recursively merge two lists in place."""
+    if len(dest) < len(src):
+        msg = "List lengths must be equal to merge them."
+        raise ConfigLoadingError(msg)
+
+    for index, value in enumerate(src):
+        if isinstance(value, list):
+            if isinstance(dest[index], list):
+                _recursive_merge_lists(dest[index], value)
+            else:
+                dest[index] = value
+        elif isinstance(value, dict):
+            if isinstance(dest[index], dict):
+                _recursive_merge_dicts(dest[index], value)
+            else:
+                dest[index] = value
+        else:
+            dest[index] = value
+    return dest
+
+
+def load_config(
+    config_initializer: ConfigInitializer[T],
+    config_path: str | Path | None = None,
+    working_dir: str | Path = ".",
+    parser: Callable[[str], dict[str, Any]] | None = None,
+    overrides: dict[str, Any] | None = None,
+    parse_env_vars: bool = True,
+    env_var_file: str | Path | None = None,
+    file_encoding: str = "utf-8",
+) -> T:
+    """Load configuration from a file.
+
+    Parameters
+    ----------
+    config_path : str | Path
+        Path to the configuration file.
+    config_initializer : ConfigInitializer
+        Configuration constructor/initializer.
+        Should accept **kwargs to initialize the configuration,
+        e.g., Config(**kwargs).
+    working_dir : str | Path, optional
+        Working directory for the configuration, by default ".".
+        This is used by configuration settings that need to resolve paths
+        relative to the working directory/project directory.
+    parser : Callable[[str], dict[str, Any]] | None, optional
+        function to parse the configuration text, (str) -> dict[str, Any].
+        If None, the parser is inferred from the file extension.
+        Supported extensions: .json, .yaml, .yml, .toml.
+    overrides : dict[str, Any] | None, optional
+        Configuration overrides, by default None.
+        Useful for overriding configuration settings programmatically,
+        perhaps from CLI flags.
+    parse_env_vars : bool, optional
+        Whether to parse environment variables in the configuration text, by default True.
+    env_var_file : str | Path | None, optional
+        Optional .env file to load prior to parsing env variables.
+    file_encoding : str, optional
+        File encoding to use when reading the configuration file, by default "utf-8".
+
+    Returns
+    -------
+    T
+        The initialized configuration object.
+
+    Raises
+    ------
+    ConfigLoadingError
+        - If the config file is not found.
+        - If the env file is not found when parse_env_vars is True and env_var_file is provided.
+        - If an environment variable is not found when parsing env variables.
+        - If there was a problem merging the overrides with the configuration.
+        - If there was a problem initializing the configuration.
+
+    ConfigParsingError
+        - If parser=None and load_config was unable to determine how to parse
+        the file based on the file extension.
+    """
+    config_data: dict[str, Any] = {}
+    working_dir = Path(working_dir).resolve()
+    if parse_env_vars and env_var_file is not None:
+        _load_dotenv(env_var_file)
+
+    if config_path is not None:
+        config_path = Path(config_path).resolve()
+        if not config_path.is_file():
+            msg = f"Config file not found: {config_path}"
+            raise FileNotFoundError(msg)
+
+        file_contents = config_path.read_text(encoding=file_encoding)
+        file_contents = _parse_env_variables(file_contents)
+
+        if parser is None:
+            parser = get_parser_for_file(config_path)
+
+        config_data = parser(file_contents)
+    if overrides is not None:
+        _recursive_merge_dicts(config_data, overrides)
+
+    config_data["cwd"] = str(working_dir)
+    try:
+        return config_initializer(**config_data)
+    except Exception as error:
+        msg = "Failed to initialize configuration."
+        raise ConfigLoadingError(msg) from error

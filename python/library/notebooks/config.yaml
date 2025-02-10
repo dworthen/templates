@@ -1,0 +1,8 @@
+logging:
+  plugins:
+    - plugin_id: FileSystemLoggerPlugin
+      settings:
+        filename: ${LOG_FILENAME}
+cache:
+  plugin:
+    plugin_id: FileSystemCache

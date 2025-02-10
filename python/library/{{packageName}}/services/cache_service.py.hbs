@@ -1,0 +1,63 @@
+"""Cache Service."""
+
+import threading
+from pathlib import Path
+
+from {{packageName}}.config.config import Config
+from {{packageName}}.factories.cache_plugin_factory import CachePluginFactory
+
+
+class CacheService:
+    """Log Service."""
+
+    def __init__(
+        self,
+        plugin_factory: CachePluginFactory,
+        config: Config,
+    ):
+        cache_config = config.cache
+        self._skip_cache = cache_config.skip_cache
+        cwd = Path(config.cwd).resolve()
+        self._lock = threading.Lock()
+
+        self._cache = plugin_factory.create_plugin(
+            cache_config.plugin.plugin_id, cwd, cache_config.plugin.settings
+        )
+
+        if cache_config.clear_cache:
+            self._cache.clear()
+
+    def get(self, key: str) -> str | None:
+        """Get from cache."""
+        if self._skip_cache:
+            return None
+        with self._lock:
+            return self._cache.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        """Log Info."""
+        if self._skip_cache:
+            return
+        with self._lock:
+            self._cache.set(key, value)
+
+    def delete(self, key: str) -> None:
+        """Delete from cache."""
+        if self._skip_cache:
+            return
+        with self._lock:
+            self._cache.delete(key)
+
+    def clear(self) -> None:
+        """Clear cache."""
+        if self._skip_cache:
+            return
+        with self._lock:
+            self._cache.clear()
+
+    def __contains__(self, key: str) -> bool:
+        """Contains in cache."""
+        if self._skip_cache:
+            return False
+        with self._lock:
+            return key in self._cache

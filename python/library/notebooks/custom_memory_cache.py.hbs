@@ -1,0 +1,58 @@
+"""Custom cache using LogService from DI."""
+
+from pathlib import Path
+from typing import Any
+
+from dependency_injector.wiring import Provide
+
+from {{packageName}}.services.log_service import LogService
+from {{packageName}}.services.service_container import ServiceContainer
+
+
+class CustomMemoryCache:
+    """Memory Cache."""
+
+    @staticmethod
+    def get_settings(cwd: Path, **settings: Any) -> None:
+        """Get settings for the class.
+
+        This plugin does not require any settings.
+        """
+        return
+
+    # Inject LogService
+    def __init__(
+        self, settings: None, logger: LogService = Provide[ServiceContainer.log_service]
+    ) -> None:
+        self.settings = settings
+        self.logger = logger
+        self.cache: dict[str, str] = {}
+
+    def get(self, key: str) -> str | None:
+        """Get."""
+        value = self.cache.get(key)
+        if value is None:
+            self.logger.info(f"Cache: Key '{key}' not found in cache.")
+        else:
+            self.logger.info(f"Cache: Key '{key}' found in cache with value {value}.")
+        return value
+
+    def set(self, key: str, value: str) -> None:
+        """Set."""
+        self.logger.info(f"Cache: Setting key '{key}' with value {value}.")
+        self.cache[key] = value
+
+    def delete(self, key: str) -> None:
+        """Delete."""
+        self.logger.info(f"Cache: Deleting key '{key}'.")
+        if key in self.cache:
+            del self.cache[key]
+
+    def clear(self) -> None:
+        """Clear."""
+        self.logger.info("Cache: Clearing cache.")
+        self.cache.clear()
+
+    def __contains__(self, key: str) -> bool:
+        """Contains in cache."""
+        return key in self.cache

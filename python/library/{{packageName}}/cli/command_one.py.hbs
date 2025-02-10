@@ -5,10 +5,14 @@ from typing import Any
 
 import typer
 
-from {{packageName}}.api import main
-from {{packageName}}.config import load_config
-
-from .global_options import config_path_option, cwd_option
+from {{packageName}} import Config, create_sample_app, load_config
+from {{packageName}}.cli.global_options import (
+    clear_cache_option,
+    config_path_option,
+    cwd_option,
+    get_config_overrides,
+    skip_cache_option,
+)
 
 command_one = typer.Typer()
 
@@ -19,28 +23,44 @@ example_override_option = typer.Option(None, help="An example override option.")
 def run_command(
     cwd: str = cwd_option,
     config: str | None = config_path_option,
-    output: str | None = example_override_option,
+    skip_cache: bool = skip_cache_option,
+    clear_cache: bool = clear_cache_option,
 ):
     """Run command one."""
     # loading config with overrides from CLI
-    overrides: dict[str, Any] = {}
-    if output:
-        overrides["output_dir"] = output
-    cwd_or_config_path = (
-        (Path(cwd) / config).resolve() if config else Path(cwd).resolve()
-    )
-    conf = load_config(cwd_or_config_path, overrides=overrides)
+    cwd_path = Path(cwd).resolve()
+    if config:
+        config_path = (cwd_path / config).resolve()
+    else:
+        config_path = (cwd_path / "{{packageName}}.config.yaml").resolve()
 
-    # Optional - Override service with custom service
-    # service_container = load_service_container(conf)
+    # config and .env files are optional. Config has defaults for all values.
+    config_file_path = config_path if config_path.is_file() else None
+    env_file_path: Path | None = cwd_path / ".env"
+    if not env_file_path.is_file():
+        env_file_path = None
+
+    # Example overriding config values and merging dicts and lists
+    config_overrides: dict[str, Any] = get_config_overrides(skip_cache, clear_cache)
+
+    # Optional - Register custom plugins
+    # register_plugin(SomeCustomPluginClass)
+    # see notebooks for examples.
+
+    conf = load_config(
+        config_path=config_file_path,
+        config_initializer=Config,
+        working_dir=cwd_path,
+        parse_env_vars=True,
+        env_var_file=env_file_path,
+        # Example of overriding config settings. Can override based on CLI flags.
+        overrides=config_overrides,
+    )
+
+    # Call API entry point
+    app, service_container = create_sample_app(conf)
+    # Advanced. Optional - Override service with custom service
     # service_container.override_providers(
     #    log_service=CustomLogService(...args)
     # )
-
-    # Optional - Register custom plugins
-    # service_container = load_service_container(conf)
-    # log_plugin_factory = service_container.log_plugin_factory()
-    # log_plugin_factory.register_plugin("SomeKey", CustomLogPlugin)
-
-    # Call API entry point
-    main(conf)
+    app.run()

@@ -3,10 +3,12 @@ import importlib.metadata
 
 from dependency_injector import containers, providers
 
-from {{packageName}}.config import Config
-from {{packageName}}.factories import LogPluginFactory
-
-from .log_service import LogService
+from {{packageName}}.config.config import Config
+from {{packageName}}.factories.cache_plugin_factory import CachePluginFactory
+from {{packageName}}.factories.logger_plugin_factory import LoggerPluginFactory
+from {{packageName}}.services.cache_service import CacheService
+from {{packageName}}.services.log_service import LogService
+from {{packageName}}.services.sample_app_service import SampleAppService
 
 _package_prefix = "{{packageName}}_plugin"
 
@@ -16,12 +18,19 @@ def _get_package_names_to_auto_wire():
 
     with the defined prefix so plugins in those
     packages can use default services with DI.
-    Plugin packages do not have to be distributed
+    Third party plugin packages do not have to be distributed
     with the package prefix for their plugins to be
     auto registered. Using tool.entry_points will
     allow the plugins to be auto registered.
     Distribution with the package prefix is required
-    only if the plugins wish to use DI services.
+    only if the plugins wish to use DI services, i.e., 
+    get service from the core library.
+    For example, a third party plugin can rely on the logging
+    service provided by the {{packageName}} package instead
+    of implementing custom logging for their plugin.
+    See the sample-plugins/{{packageName}}_plugin_cache for an example
+    of a third party plugin getting service from the core library using DI.
+    Also view the notebooks for more information.
     """
     packages = importlib.metadata.packages_distributions()
     return [pkg for pkg in packages if pkg.startswith(_package_prefix)]
@@ -31,23 +40,28 @@ class ServiceContainer(containers.DeclarativeContainer):
     """Application service container."""
 
     wiring_config = containers.WiringConfiguration(
-        packages=["{{packageName}}", *_get_package_names_to_auto_wire()],
+        packages=["{{packageName}}", *_get_package_names_to_auto_wire(), "notebooks"],
         auto_wire=True,
     )
-    """This will auto wire package and installed packages with defined prefix"""
 
+    # Config - must be provided.
     config = providers.Dependency(instance_of=Config)
-    """Config is required when instantiating service container ServiceContainer(config=config)"""
 
-    log_plugin_factory = providers.Singleton(LogPluginFactory)
-    """Log Plugin Factory"""
-
+    # Logging
+    log_plugin_factory = providers.Singleton(LoggerPluginFactory)
     log_service = providers.Singleton(
         LogService, plugin_factory=log_plugin_factory, config=config
     )
-    """Log Service"""
 
-    # Caching service
-    # vector DB service
-    # Progress Reporter service
-    # Pipeline steps, e.g., text chunking
+    # Cache
+    cache_plugin_factory = providers.Singleton(CachePluginFactory)
+    cache_service = providers.Singleton(
+        CacheService, plugin_factory=cache_plugin_factory, config=config
+    )
+
+    # Sample App Service
+    sample_app_service = providers.Singleton(
+        SampleAppService, logger=log_service, cache=cache_service
+    )
+
+    # Other services

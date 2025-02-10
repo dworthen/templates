@@ -1,58 +1,93 @@
 """Log Service."""
 
+import inspect
+import threading
 from pathlib import Path
+from typing import Any
 
-from {{packageName}}.config import Config
-from {{packageName}}.factories import LogPluginFactory
-from {{packageName}}.plugins.logging import LogPlugin
+from {{packageName}}.config.config import Config
+from {{packageName}}.factories.logger_plugin_factory import LoggerPluginFactory
+from {{packageName}}.plugins.logger.logger_plugin import LoggerPlugin
 
 
 class LogService:
     """Log Service."""
-    
+
     def __init__(
         self,
-        plugin_factory: LogPluginFactory,
+        plugin_factory: LoggerPluginFactory,
         config: Config,
     ):
-        self.loggers: list[LogPlugin] = []
-        log_config = config.logging
+        logging_config = config.logging
+        self._source = logging_config.source
+        self._lock = threading.Lock()
         cwd = Path(config.cwd).resolve()
 
-        for lc in log_config:
-            self.loggers.append(plugin_factory.create_plugin(lc.id, cwd, lc.settings))
+        self._loggers: list[LoggerPlugin] = []
 
-    def info(self, msg: str) -> None:
+        for lc in logging_config.plugins:
+            self._loggers.append(
+                plugin_factory.create_plugin(lc.plugin_id, cwd, lc.settings)
+            )
+
+    def _get_data(self, **kwargs: Any) -> dict[str, Any]:
+        data: dict[str, Any] = {}
+        if self._source:
+            current_frame = inspect.currentframe()
+            caller_frame = current_frame.f_back if current_frame else None
+            caller_frame = caller_frame.f_back if caller_frame else None
+            caller_info = inspect.getframeinfo(caller_frame) if caller_frame else None
+            if caller_info:
+                data["filename"] = caller_info.filename
+                data["linenumber"] = caller_info.lineno
+                data["function"] = caller_info.function
+        return {**data, **kwargs}
+
+    def info(self, msg: str, **kwargs: Any) -> None:
         """Log Info."""
-        for logger in self.loggers:
-            logger.info(msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.info(msg, **data)
 
-    def debug(self, msg: str) -> None:
+    def debug(self, msg: str, **kwargs: Any) -> None:
         """Log Debug."""
-        for logger in self.loggers:
-            logger.debug(msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.debug(msg, **data)
 
-    def warning(self, msg: str) -> None:
+    def warning(self, msg: str, **kwargs: Any) -> None:
         """Log Warning."""
-        for logger in self.loggers:
-            logger.warning(msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.warning(msg, **data)
 
-    def error(self, msg: str) -> None:
+    def error(self, msg: str, **kwargs: Any) -> None:
         """Log Error."""
-        for logger in self.loggers:
-            logger.error(msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.error(msg, **data)
 
-    def critical(self, msg: str) -> None:
+    def critical(self, msg: str, **kwargs: Any) -> None:
         """Log Critical."""
-        for logger in self.loggers:
-            logger.critical(msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.critical(msg, **data)
 
-    def fatal(self, msg: str) -> None:
+    def fatal(self, msg: str, **kwargs: Any) -> None:
         """Log Fatal."""
-        for logger in self.loggers:
-            logger.fatal(msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.fatal(msg, **data)
 
-    def log(self, level: int, msg: str) -> None:
+    def log(self, level: int, msg: str, **kwargs: Any) -> None:
         """Log."""
-        for logger in self.loggers:
-            logger.log(level, msg)
+        data = self._get_data(**kwargs)
+        with self._lock:
+            for logger in self._loggers:
+                logger.log(level, msg, **data)

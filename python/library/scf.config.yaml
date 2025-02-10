@@ -1,0 +1,74 @@
+forms:
+  - fields:
+      - variableName: packageName
+        type: input
+        title: Package Name
+        description: "Example: my_package"
+        required: true
+      - variableName: description
+        type: input
+        title: Description
+        description: Short description of the package
+        required: true
+      - variableName: pythonVersion
+        type: input
+        title: Python Version
+        description: "Example: ^3.11"
+        required: true
+      - variableName: author
+        type: input
+        title: Author
+        description: Author info, e.g., NAME <EMAIL>
+        required: true
+      - variableName: buildTool
+        type: select
+        title: Build Tool
+        description: "Select the build tool you want to use"
+        options: ["poetry", "uv"]
+scaffold:
+  .:
+    - files: ["**/*"]
+      parse: ["**/*.hbs"]
+commands:
+  - condition: "{{eq buildTool 'poetry'}}"
+    postScaffold:
+      - poetry add pydantic typer dependency-injector python-dotenv pyyaml toml xxhash
+      - poetry add coverage pytest pytest-asyncio pytest-timeout ruff poethepoet pyright ipykernel jupyter nbconvert semversioner update-toml --group dev
+      - poetry install
+      - poetry build
+  - condition: "{{eq buildTool 'poetry'}}"
+    workingDirectory: "sample-plugins/{{packageName}}-plugin-logger"
+    postScaffold:
+      - poetry build
+  - condition: "{{eq buildTool 'poetry'}}"
+    workingDirectory: "sample-plugins/{{packageName}}-plugin-cache"
+    postScaffold:
+      - "poetry add ../../dist/{{packageName}}-0.1.0-py3-none-any.whl"
+      - poetry build
+  - condition: "{{eq buildTool 'poetry'}}"
+    postScaffold:
+      - "poetry add sample-plugins/{{packageName}}-plugin-logger/dist/{{packageName}}_plugin_logger-0.1.0-py3-none-any.whl"
+      - "poetry add sample-plugins/{{packageName}}-plugin-cache/dist/{{packageName}}_plugin_cache-0.1.0-py3-none-any.whl"
+      - poetry install
+      - poetry Build
+  - condition: "{{eq buildTool 'uv'}}"
+    postScaffold:
+      - uv add pydantic typer dependency-injector python-dotenv pyyaml toml xxhash
+      - uv add --dev coverage pytest pytest-asyncio pytest-timeout ruff poethepoet pyright ipykernel jupyter nbconvert semversioner update-toml
+      - uv sync
+      - uv build
+  - condition: "{{eq buildTool 'uv'}}"
+    workingDirectory: "sample-plugins/{{packageName}}-plugin-logger"
+    postScaffold:
+      - uv build
+  - condition: "{{eq buildTool 'uv'}}"
+    workingDirectory: "sample-plugins/{{packageName}}-plugin-cache"
+    postScaffold:
+      - "uv add ../../dist/{{packageName}}-0.1.0-py3-none-any.whl"
+      - uv build
+  - condition: "{{eq buildTool 'uv'}}"
+    postScaffold:
+      - "uv add sample-plugins/{{packageName}}-plugin-logger/dist/{{packageName}}_plugin_logger-0.1.0-py3-none-any.whl"
+      - "uv add sample-plugins/{{packageName}}-plugin-cache/dist/{{packageName}}_plugin_cache-0.1.0-py3-none-any.whl"
+      - uv sync
+      - uv build

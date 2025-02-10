@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 class LogPluginFileConsoleSettings(BaseModel):
     """File System Log Plugin Settings."""
 
-    name: str = Field(description="Logger name.", default="Console")
+    name: str = Field(description="Logger name.", default="Console Logger")
 
 
 class LogPluginConsole:
@@ -33,32 +33,32 @@ class LogPluginConsole:
             logging.FATAL: self.fatal,
         }
 
-    def debug(self, msg: str) -> None:
+    def debug(self, msg: str, **kwargs: Any) -> None:
         """Log Debug."""
         print(f"{self.settings.name} DEBUG: {msg}")
 
-    def info(self, msg: str) -> None:
+    def info(self, msg: str, **kwargs: Any) -> None:
         """Log Info."""
         print(f"{self.settings.name} INFO: {msg}")
 
-    def warning(self, msg: str) -> None:
+    def warning(self, msg: str, **kwargs: Any) -> None:
         """Log Warning."""
         print(f"{self.settings.name} WARNING: {msg}")
 
-    def error(self, msg: str) -> None:
+    def error(self, msg: str, **kwargs: Any) -> None:
         """Log Error."""
         print(f"{self.settings.name} ERROR: {msg}")
 
-    def critical(self, msg: str) -> None:
+    def critical(self, msg: str, **kwargs: Any) -> None:
         """Log Critical."""
         print(f"{self.settings.name} CRITICAL: {msg}")
 
-    def fatal(self, msg: str) -> None:
+    def fatal(self, msg: str, **kwargs: Any) -> None:
         """Log Fatal."""
         print(f"{self.settings.name} FATAL: {msg}")
 
-    def log(self, level: int, msg: str) -> None:
+    def log(self, level: int, msg: str, **kwargs: Any) -> None:
         """Log."""
         if level not in self.log_mapping:
             raise ValueError(f"Invalid log level {level}.")
-        self.log_mapping[level](msg)
+        self.log_mapping[level](msg, **kwargs)

@@ -1,32 +1,15 @@
 """Factory Base Class."""
 
 import inspect
+import sys
 from abc import ABC, abstractmethod
 from importlib.metadata import entry_points
 from pathlib import Path
 from typing import Any, Generic, TypeVar, cast
 
-from {{packageName}}.plugins import Plugin
+from {{packageName}}.plugins.plugin import Plugin
 
 T = TypeVar("T", bound=Plugin[Any])
-
-
-class FailedToRegisterPluginError(ValueError):
-    """Failed to register plugin error."""
-
-    def __init__(self, key: str) -> None:
-        """Initialize the error."""
-        msg = f"Failed to register plugin for '{key}' as key is already registered."
-        super().__init__(msg)
-
-
-class NotAPluginError(ValueError):
-    """Not a plugin error."""
-
-    def __init__(self, key: str, type_name: str = "Plugin") -> None:
-        """Initialize the error."""
-        msg = f"Failed to register plugin for '{key}' as it does not implement the {type_name} class."
-        super().__init__(msg)
 
 
 class PluginNotFoundError(ValueError):
@@ -44,13 +27,19 @@ class Factory(ABC, Generic[T]):
     @property
     @abstractmethod
     def _entry_points_registration_key(self) -> str:
-        """Get the registration key."""
-        pass
+        """Get the registration key.
+
+        This key is used to auto-register plugins from entry points.
+        Third-party packages can specify available plugins using entry points.
+        """
 
     @property
     @abstractmethod
     def _plugin_type(self) -> type:
-        """Get the type of the plugin."""
+        """Get the type of the plugin.
+
+        This is used to validate that the plugin implements the correct interface during registration.
+        """
         raise NotImplementedError
 
     def __init__(self):
@@ -58,12 +47,24 @@ class Factory(ABC, Generic[T]):
         self._plugins: dict[str, type[T]] = {}
 
     def register_plugin(self, key: str, plugin: type[T]) -> None:
-        """Register a plugin."""
+        """Register a plugin.
+
+        Print warnings when overriding existing plugins or when the plugin does not implement the correct interface.
+        Does not raise exceptions so bad plugins can be ignored.
+        This prevents bad or outdated plugins from breaking the entire application if they are not used.
+        """
         if key in self._plugins:
-            raise FailedToRegisterPluginError(key)
+            existing_plugin = self._plugins[key]
+            msg = f"Registering '{plugin.__name__}' for '{key}' overrides existing plugin, '{existing_plugin.__name__}', registered to the same key."
+            sys.stderr.write(msg)
         if not inspect.isclass(plugin) or not issubclass(plugin, self._plugin_type):
-            raise NotAPluginError(key, self._plugin_type.__name__)
+            msg = f"Failed to register plugin, '{plugin.__name__}', for '{key}' as it does not implement the {self._plugin_type.__name__} class."
+            sys.stderr.write(msg)
         self._plugins[key] = plugin
+
+    def get_all_plugins(self) -> dict[str, type[T]]:
+        """Get all registered plugins."""
+        return self._plugins
 
     def get_plugin(self, plugin_id: str) -> type[T]:
         """Get a plugin."""
@@ -75,12 +76,18 @@ class Factory(ABC, Generic[T]):
         """Create a plugin."""
         plugin_cls = self.get_plugin(plugin_id)
         args = plugin_cls.get_settings(cwd, **settings)
-        inst = plugin_cls(args)
-        return inst
+        return plugin_cls(args)
 
     def auto_register_plugins(self) -> None:
-        """Auto register plugins."""
-        if not hasattr(self, "_entry_points_registration_key"):
+        """Auto register third-party plugins.
+        
+        Auto register third-party plugins using entry points.
+        """
+        if (
+            not hasattr(self, "_entry_points_registration_key")
+            or self._entry_points_registration_key is None
+            or self._entry_points_registration_key.strip() == ""
+        ):
             return
         plugins = entry_points(group=self._entry_points_registration_key)
         for entry_point in plugins:

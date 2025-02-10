@@ -1,0 +1,37 @@
+{{#equal buildTool "poetry"}}
+[tool.poetry]
+name = "{{packageName}}-plugin-cache"
+version = "0.1.0"
+description = ""
+authors = ["{{{authoer}}}"]
+readme = "README.md"
+packages = [{ include = "{{packageName}}_plugin_cache" }]
+
+[tool.poetry.dependencies]
+python = "{{{pythonVersion}}}"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.plugins."{{packageName}}.plugins.cache"]
+ThirdPartyInMemoryCacheWithLogging = "{{packageName}}_plugin_cache.memory_cache:MemoryCache"
+{{/equal}}
+{{#equal buildTool "uv"}}
+[project]
+name = "{{packageName}}-plugin-cache"
+version = "0.1.0"
+description = "{{{description}}}"
+readme = "README.md"
+packages = [{ include = "{{packageName}}_plugin_cache" }]
+requires-python = "{{{pythonVersion}}}"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.entry-points."{{packageName}}.plugins.cache"]
+ThirdPartyInMemoryCacheWithLogging = "{{packageName}}_plugin_cache.memory_cache:MemoryCache"
+{{/equal}}

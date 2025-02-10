@@ -1,0 +1,29 @@
+"""SampleAppService module."""
+
+from {{packageName}}.services.cache_service import CacheService
+from {{packageName}}.services.log_service import LogService
+
+
+class SampleAppService:
+    """SampleAppService class."""
+
+    def __init__(
+        self,
+        logger: LogService,
+        cache: CacheService,
+    ) -> None:
+        self._logger = logger
+        self._cache = cache
+
+    def run(self) -> None:
+        """Run the Sample App Service."""
+        self._logger.info("Running Sample App Service.")
+        cache_key = "my_cache_key"
+        cache_value = "my_cache_value"
+        self._logger.info("Setting cache key.", key=cache_key, value=cache_value)
+        print(f"Setting cache key: {cache_key} with value: {cache_value}")
+        self._cache.set(cache_key, cache_value)
+        self._logger.info("Getting cache key.", key=cache_key)
+        cached_value = self._cache.get(cache_key)
+        self._logger.info("Retrieved from cache", key=cache_key, value=cached_value)
+        print(f"Retrieved from cache: {cache_key} with value: {cached_value}")

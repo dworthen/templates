@@ -1,0 +1,25 @@
+"""Log Plugin Factory."""
+
+from {{packageName}}.factories.factory import Factory
+from {{packageName}}.plugins.logger.logger_plugin import LoggerPlugin
+
+
+class LoggerPluginFactory(Factory[LoggerPlugin]):
+    """Log Plugin Factory."""
+
+    @property
+    def _entry_points_registration_key(self) -> str:
+        """Get entry points registration key.
+
+        Plugins from third-party packages can specify available plugins using this entry point.
+        """
+        return "{{packageName}}.plugins.logging"
+
+    @property
+    def _plugin_type(self):
+        """Get the type of the plugin.
+
+        Plugins must satisfy the LogPlugin protocol in order to be registered
+        with this factory.
+        """
+        return LoggerPlugin
